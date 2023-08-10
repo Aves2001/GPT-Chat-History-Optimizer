@@ -12,6 +12,8 @@
 // @grant        GM_registerMenuCommand
 // @homepageURL  https://github.com/Aves2001/GPT-Chat-History-Optimizer
 // @supportURL   https://github.com/Aves2001/GPT-Chat-History-Optimizer/issues
+// @updateURL    https://raw.githubusercontent.com/Aves2001/GPT-Chat-History-Optimizer/main/script.meta.js
+// @downloadURL  https://github.com/Aves2001/GPT-Chat-History-Optimizer/raw/main/script.user.js
 // @license      MIT
 // ==/UserScript==
 
