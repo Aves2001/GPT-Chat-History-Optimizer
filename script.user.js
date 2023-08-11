@@ -2,7 +2,7 @@
 // @name         GPT Chat History Optimizer
 // @name:uk      GPT Оптимізатор історії чатів
 // @namespace    https://chat.openai.com
-// @version      2023.08.10.0
+// @version      2023.08.11.0
 // @description  Цей скрипт оптимізує історію чату GPT, зберігаючи лише останні повідомлення для покращення продуктивності та зниження використання ресурсів браузера. Видалені повідомлення все одно враховуються в нових відповідях чату, забезпечуючи ефективну та швидку роботу.
 // @run-at       document-end
 // @author       https://github.com/Aves2001
@@ -20,37 +20,38 @@
 
 (function() {
     'use strict';
-    var targetClass = 'main > div.flex-1.overflow-hidden > div > div > div > div';
+    const targetClass = 'main > div.flex-1.overflow-hidden > div > div > div > div.group.w-full';
+    const OBSERVED_CLASSES = [
+        'flex-1 overflow-hidden',
+        'flex flex-col text-sm dark:bg-gray-800',
+        'relative h-full w-full transition-width flex flex-col overflow-auto items-stretch flex-1'
+    ];
 
-    var targerClassNameObserve1 = 'flex-1 overflow-hidden';
-    var targerClassNameObserve2 = 'flex flex-col text-sm dark:bg-gray-800';
-    var targerClassNameObserve3 = 'relative h-full w-full transition-width flex flex-col overflow-auto items-stretch flex-1';
-
-    var countKeepLastMessages = GM_getValue('countKeepLastMessages', 12);
+    let countKeepLastMessages = GM_getValue('countKeepLastMessages', 12);
 
 
     function keepLastMessages() {
         // Вибираємо всі цільові елементи
-        var elements = document.querySelectorAll(targetClass);
+        let elements = document.querySelectorAll(targetClass);
 
         if (elements.length <= countKeepLastMessages) return;
 
         // Індекс останнього елемента, який слід залишити
-        var lastIndexToKeep = elements.length - countKeepLastMessages;
+        let lastIndexToKeep = elements.length - countKeepLastMessages;
 
         // Видаляємо зайві елементи
-        for (var i = 0; i < lastIndexToKeep; i++) {
+        for (let i = 0; i < lastIndexToKeep; i++) {
             elements[i].remove();
         }
 
         // Вивід кількості видалених повідомлень
-        console.log("Було видалено повідомлень: " + i);
+        console.log("Було видалено повідомлень: " + lastIndexToKeep);
     }
 
 
     function saveSettings_CountKeepLastMessages() {
-        var newCountKeepLastMessages = parseInt(prompt('Введіть нову кількість повідомлень:', countKeepLastMessages));
-        if (!isNaN(newCountKeepLastMessages) && newCountKeepLastMessages >= 0) {
+        let newCountKeepLastMessages = parseInt(prompt('Введіть нову кількість повідомлень:', countKeepLastMessages));
+        if (!isNaN(newCountKeepLastMessages) && newCountKeepLastMessages >= 1) {
             GM_setValue('countKeepLastMessages', newCountKeepLastMessages);
             countKeepLastMessages = newCountKeepLastMessages;
             keepLastMessages();
@@ -75,18 +76,13 @@
     document.addEventListener('keydown', handleKeyPress);
 
 
-    // Створення інстансу MutationObserver
-    var targetObserver = new MutationObserver(function(mutationsList, observer) {
-        for (var mutation of mutationsList) {
-            if (mutation.type === 'childList') {
-                if (mutation.target.className === targerClassNameObserve1 ||
-                    mutation.target.className === targerClassNameObserve2 ||
-                    mutation.target.className === targerClassNameObserve2) {
-                    keepLastMessages();
-                }
+    let observer = new MutationObserver(mutations => {
+        for (let m of mutations) {
+            if (m.type === 'childList' && OBSERVED_CLASSES.includes(m.target.className)) {
+                keepLastMessages();
             }
         }
     });
-    targetObserver.observe(document, { childList: true, subtree: true });
+    observer.observe(document, { childList: true, subtree: true });
 
 })();
